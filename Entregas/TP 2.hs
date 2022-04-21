@@ -71,8 +71,8 @@ agregarAlFinal (x:xs) a = x : agregarAlFinal xs a
 
 
 concatenar :: [a] -> [a] -> [a]
-concatenar [] (ys)     = ys
-concatenar (x:xs) (ys) = x : concatenar xs ys
+concatenar []     ys = ys
+concatenar (x:xs) ys = x : concatenar xs ys
 
 
  
