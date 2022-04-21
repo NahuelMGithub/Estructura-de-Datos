@@ -15,36 +15,25 @@ sucesores (n:ns) = n+1 : sucesores ns
 
 
 ---- DUDA!!!!!!!!!!!!!! Como hago esta con elemento vacio
---conjuncion :: [Bool] -> Bool
---conjuncion  []    = True
---conjuncion (b:bs) = b && conjuncion bs
-
 conjuncion :: [Bool] -> Bool
-conjuncion  []     = error "La lista no puede estar vacia"
-conjuncion  (b:[]) = b
-conjuncion  (b:bs) = b && conjuncion bs
-
+conjuncion  []    = True
+conjuncion (b:bs) = b && conjuncion bs
 
 ---- DUDA!!!!!!!!!!!!!! Como hago esta con elemento vacio
-disyuncionMal :: [Bool] -> Bool
-disyuncionMal  []    = False
-disyuncionMal (b:bs) = b || disyuncion bs 
-
 disyuncion :: [Bool] -> Bool
-disyuncion  []     = error "La lista no puede estar vacia"
-disyuncion  (b:[]) = b
-disyuncion (b:bs)  = b || disyuncion bs 
+disyuncion  []    = False
+disyuncion (b:bs) = b || disyuncion bs 
 
 ------------------
---- Hasta ahora solo hice un comit. Me lo permitio. cambie el aplanar y ahora quiero hacer un psuh.
+
 aplanar :: [[a]] -> [a]
 aplanar []       = []
-aplanar (ls:lss)   =  ls ++ aplanar lss 
+aplanar (l:ls)   =  l ++ aplanar ls 
 
-
+---- DUDA!!!!!!!!!!!!!! si en lugar de a uso letra y no me lo toma
 pertenece :: Eq a => a -> [a] -> Bool
-pertenece y []     = False
-pertenece y (x:xs) = y == x || pertenece y xs
+pertenece a []     = False
+pertenece a (x:xs) = a == x || pertenece a xs
 
 apariciones :: Eq a => a -> [a] -> Int
 apariciones a []     = 0
@@ -69,39 +58,28 @@ agregarAlFinal :: [a] -> a -> [a]
 agregarAlFinal []     a = a : []
 agregarAlFinal (x:xs) a = x : agregarAlFinal xs a
 
-
+--- Esta es como agregar, pero en la Diapo NO pone el ejemplo de  [] []
 concatenar :: [a] -> [a] -> [a]
+concatenar [] []       = []
 concatenar [] (ys)     = ys
 concatenar (x:xs) (ys) = x : concatenar xs ys
 
-
+---- 13  por que no?
  
-reversa :: [a] -> [a]
-reversa  []     =  []
-reversa  (x:xs) =   agregarAlFinal (reversa xs)  x
+--reversa :: [a] -> [a]
+--reversa  []     =  []
+--reversa  (xs:x) = x : reversa xs 
+
+--zipMaximos :: [Int] -> [Int] -> [Int]
 
 
-
-zipMaximos :: [Int] -> [Int] -> [Int]
-zipMaximos []      _     = []
-zipMaximos _       []    = []
-zipMaximos (n:ns) (m:ms) = (maximo n m) : zipMaximos ns ms
-
-maximo :: Int -> Int -> Int
-maximo x y = if x > y 
-              then x
-              else y 
-
-
+---- Lo intente con subtareas y me tira error 
 elMinimo :: Ord a => [a] -> a
 elMinimo [] = error "La lista no tiene elementos"
 elMinimo (x : []) = x
-elMinimo (x:xs) = minimo x (elMinimo xs)
-
-minimo :: Ord a => a -> a -> a
-minimo x y = if x > y
-            then y
-            else x
+elMinimo (x:xs) = if x < elMinimo xs    
+                    then x 
+                    else elMinimo xs
 
 ------------------------------------------- 2 Recursión sobre números
 
@@ -122,7 +100,7 @@ losPrimeros 0 _      = []
 losPrimeros n []     = []
 losPrimeros n (x:xs) = x : losPrimeros (n-1) xs
 
-
+--------------- Esta resuelto, pero no se si esta bien planteada la recusr
 sinLosPrimeros :: Int -> [a] -> [a]
 sinLosPrimeros 0 xs     = xs
 sinLosPrimeros n []     = []
@@ -147,8 +125,7 @@ edad (ConsPer n e) = e
 listaFamilia = [ConsPer "Nahue" 33, ConsPer "Cami" 18 ]
 
 
-------- yo hice SumarEdades, porque NO pude poner sumatoria dado que toma int,
---  y no se como usar edad para que me de un Int dado que le doy una lista y no una Persona
+------- yo hice SumarEdades, porque NO pude poner sumatoria dado que toma int, y no se como usar edad para que me de un Int dado que le doy una lista y no una Persona
 promedioEdad :: [Persona] -> Int
 promedioEdad []   = error "NO hay personas"
 promedioEdad (xs) = div (sumarEdades xs) (longitud xs)
@@ -203,46 +180,12 @@ unoSiEsmismoTipo _      _      = 0
 tipoDePokemon :: Pokemon -> TipoDePokemon
 tipoDePokemon (ConsPokemon t _) = t
 
----------------------------- FIDEL! 
+---
 
-losQueLeGanan :: TipoDePokemon -> Entrenador -> Entrenador -> Int
-losQueLeGanan tipo (ConsEntrenador _ ps1)  (ConsEntrenador _ ps2) =
-             todosLosQueGanan ( losDeMismoTipo  tipo ps1 ) ps2
+--losQueLeGanan :: TipoDePokemon -> Entrenador -> Entrenador -> Int
+--losQueLeGanan tipo (ConsEntrenador _ [ps1])  (ConsEntrenador _ [ps2]) = vencedoresPorTipo tipo ps1 ps2
 
-
-losDeMismoTipo :: TipoDePokemon -> [Pokemon]-> [Pokemon]
-losDeMismoTipo t []     = []
-losDeMismoTipo t (p:ps) = if esMismoTipo t (tipoDePokemon p)
-                           then p : losDeMismoTipo t ps
-                           else losDeMismoTipo t ps
-
-esMismoTipo :: TipoDePokemon -> TipoDePokemon -> Bool
-esMismoTipo Agua    Agua  = True
-esMismoTipo Fuego   Fuego = True
-esMismoTipo Planta  Planta = True
-esMismoTipo _       _     = False
- 
-todosLosQueGanan :: [Pokemon]-> [Pokemon] ->  Int
-todosLosQueGanan []  _     = 0
-todosLosQueGanan _   []    = 0
-todosLosQueGanan (p:ps) ys = unoSi(superaATodos p ys)
-                            + todosLosQueGanan ps ys
-
-superaATodos :: Pokemon -> [Pokemon] -> Bool
-superaATodos p []     = True
-superaATodos p (x:xs) = superaA p x && superaATodos p xs
-
-
-superaA :: Pokemon -> Pokemon -> Bool
-superaA (ConsPokemon t1 _) (ConsPokemon t2 _) = elementoSuperaA t1 t2
-
-elementoSuperaA :: TipoDePokemon -> TipoDePokemon -> Bool
-elementoSuperaA Agua   Fuego  = True
-elementoSuperaA Fuego  Planta = True
-elementoSuperaA Planta Agua   = True
-elementoSuperaA _      _      = False 
-
--------------------------------------
+--vencedoresPorTipo :: TipoDePokemon -> [Pokemon] -> [Pokemon] -> Int
 
 ash = ConsEntrenador "Ash" [ConsPokemon Agua 2, ConsPokemon Fuego 3, ConsPokemon Planta 5]
 misty = ConsEntrenador "Mysty" [ConsPokemon Agua 2, ConsPokemon Agua 3, ConsPokemon Agua 5]
@@ -261,6 +204,12 @@ hayAlMenosUnTipo t (p:ps) = esMismoTipo t (tipoDePokemon p)
                             || hayAlMenosUnTipo t ps
 
 
+esMismoTipo :: TipoDePokemon -> TipoDePokemon -> Bool
+esMismoTipo Agua   Agua   = True
+esMismoTipo Fuego  Fuego  = True
+esMismoTipo Planta Planta = True
+esMismoTipo _      _      = False
+
 
 ---------------------- 3
 
@@ -270,39 +219,27 @@ data Rol = Developer Seniority Proyecto | Management Seniority Proyecto
 data Empresa = ConsEmpresa [Rol]
 
 proyectos :: Empresa -> [Proyecto]
-proyectos (ConsEmpresa roles) = sinRepetir ( totalProyectos roles )
+proyectos (ConsEmpresa roles) = totalProyectos roles
 
 totalProyectos :: [Rol] -> [Proyecto]
 totalProyectos []     = []
 totalProyectos (r:rs) =  proyectoDelRol r  : totalProyectos rs
 
-sinRepetir :: [Proyecto] -> [Proyecto] 
-sinRepetir []     = []
-sinRepetir (x:xs) = let xs' = sinRepetir xs
-                     in if perteneceProyecto x xs' 
-                         then xs'
-                         else x : xs'    
-
-perteneceProyecto :: Proyecto -> [Proyecto] -> Bool
-perteneceProyecto x []     = False
-perteneceProyecto x (p:ps)  = nombreProyecto x == nombreProyecto p
-                                || perteneceProyecto x ps 
-
-             
+----- Como hago para que sea sin repetir?
 
 proyectoDelRol :: Rol -> Proyecto
-proyectoDelRol (Developer  _ p) = p
+proyectoDelRol (Developer _ p)  = p
 proyectoDelRol (Management _ p) = p
 
 --
-
+{---
 losDevSenior :: Empresa -> [Proyecto] -> Int
 losDevSenior (ConsEmpresa roles) ps = seniorEnProyectos roles ps
 
 seniorEnProyectos :: [Rol] -> [Proyecto] -> Int
 seniorEnProyectos []     _      = 0
 seniorEnProyectos (r:rs) []     = 0
-seniorEnProyectos (r:rs) ps = unoSi (perteneceProyecto (proyectoDelRol r) ps )
+seniorEnProyectos (r:rs) ps = unoSi (pertenece (proyectoDelRol r) ps )
                                     + seniorEnProyectos rs ps
                                 
 
@@ -312,6 +249,11 @@ esSenior (Developer Senior _)  = True
 esSenior (Management Senior _) = True
 esSenior _                     = False
 
+---- No me toma Pertenece xq?
+
+
+
+-}
 
 
 unoSi :: Bool -> Int
@@ -337,16 +279,4 @@ nombreProyecto :: Proyecto -> String
 nombreProyecto (ConsProyecto s) = s
 
 
-asignadosPorProyecto :: Empresa -> [(Proyecto, Int)]
-asignadosPorProyecto (ConsEmpresa rs) = rolesAsignados rs
-
-rolesAsignados :: [Rol] -> [(Proyecto, Int)]
-rolesAsignados []      =  []
-rolesAsignados (r:rs)  =  (proyectoDelRol r, cantidadEnProyecto (proyectoDelRol r) (r:rs))
-                            : rolesAsignados rs
-
-cantidadEnProyecto :: Proyecto -> [Rol] -> Int
-cantidadEnProyecto p []     = 0
-cantidadEnProyecto p (r:rs) = unoSi (nombreProyecto p == nombreProyecto ( proyectoDelRol r) )
-                              + cantidadEnProyecto p rs
-
+--------

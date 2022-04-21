@@ -36,10 +36,10 @@ disyuncion  (b:[]) = b
 disyuncion (b:bs)  = b || disyuncion bs 
 
 ------------------
---- Hasta ahora solo hice un comit. Me lo permitio. cambie el aplanar y ahora quiero hacer un psuh.
+
 aplanar :: [[a]] -> [a]
 aplanar []       = []
-aplanar (ls:lss)   =  ls ++ aplanar lss 
+aplanar (l:ls)   =  l ++ aplanar ls 
 
 
 pertenece :: Eq a => a -> [a] -> Bool
