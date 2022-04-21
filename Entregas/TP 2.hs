@@ -151,7 +151,7 @@ listaFamilia = [ConsPer "Nahue" 33, ConsPer "Cami" 18 ]
 --  y no se como usar edad para que me de un Int dado que le doy una lista y no una Persona
 promedioEdad :: [Persona] -> Int
 promedioEdad []   = error "NO hay personas"
-promedioEdad (xs) = div (sumarEdades xs) (longitud xs)
+promedioEdad xs   = div (sumarEdades xs) (longitud xs)
 
 sumarEdades :: [Persona] -> Int
 sumarEdades []     = 0
