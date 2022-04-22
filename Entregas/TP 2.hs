@@ -295,24 +295,34 @@ proyectoDelRol (Developer  _ p) = p
 proyectoDelRol (Management _ p) = p
 
 --
-
+{- ESTE AUN NO LO TERMINE. 
 losDevSenior :: Empresa -> [Proyecto] -> Int
 losDevSenior (ConsEmpresa roles) ps = seniorEnProyectos roles ps
 
 seniorEnProyectos :: [Rol] -> [Proyecto] -> Int
-seniorEnProyectos []     _      = 0
-seniorEnProyectos (r:rs) []     = 0
-seniorEnProyectos (r:rs) ps = unoSi (perteneceProyecto (proyectoDelRol r) ps )
-                                    + seniorEnProyectos rs ps
-                                
+seniorEnProyectos []     _  = 0 
+seniorEnProyectos (r:rs) ps = unoSi (seniorYParticipa r ps) + seniorEnProyectos rs ps
 
 
-esSenior :: Rol -> Bool
-esSenior (Developer Senior _)  = True
-esSenior (Management Senior _) = True
-esSenior _                     = False
+MAL!!! TENGO QUE  COMPARAR STRING CON STRING PARA PODER VER SI ESTA, NO PROYECTO... UNA OBSERVADORA?
+ADEMAS PARECE TENER MUCHA RESPO
+seniorYParticipa :: Rol -> [Proyecto] -> Bool
+seniorYParticipa r []     = False
+seniorYParticipa r (p:ps) =  esSenior (seniorityDelRol r) && pertenece (proyectoDelRol r) ps... 
 
 
+seniorityDelRol :: Rol -> Seniority
+seniorityDelRol (Developer  s _) = s
+seniorityDelRol (Management s _) = s
+
+esSenior :: Seniority -> Bool
+esSenior  Senior  = True
+esSenior  _       = False
+
+singularSi :: Bool -> a -> [a]
+singularSi True  x = [x]
+singularSi False _ = []
+-}
 
 unoSi :: Bool -> Int
 unoSi True  = 1
@@ -323,7 +333,6 @@ cantQueTrabajanEn ps (ConsEmpresa rol) = totalTrbajandoEn ps rol
 
 totalTrbajandoEn :: [Proyecto] -> [Rol] -> Int
 totalTrbajandoEn []     _     = 0
-totalTrbajandoEn (p:ps) []    = 0
 totalTrbajandoEn (p:ps) roles = unoSi (proyectoAsignado p roles)
                                 + totalTrbajandoEn ps roles
 
