@@ -267,5 +267,12 @@ eval (Prod (Valor n) (Valor m) ) = n * m
 -------------
 
 
----No la supe encarar.
---simplificar :: ExpA -> ExpA
+simplificar :: ExpA -> ExpA
+simplificar (Sum  (Valor 0)    (Valor x))                       = Valor x
+simplificar (Sum  (Valor x)    (Valor 0))                       = Valor x
+simplificar (Prod (Valor 0)    (Valor x))                       = Valor 0 
+simplificar (Prod (Valor x)    (Valor 0))                       = Valor 0 
+simplificar (Prod (Valor 1)    (Valor x))                       = Valor x
+simplificar (Prod (Valor x)    (Valor 1))                       = Valor x
+simplificar (Prod (Valor (-1)) ((Prod (Valor (-1)) (Valor x)))) = Valor x
+

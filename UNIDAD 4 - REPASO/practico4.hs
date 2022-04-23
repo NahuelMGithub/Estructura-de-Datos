@@ -154,11 +154,11 @@ mayorEntre n m = if n > m
                 else m
 
 
---- ///////////////////////////////////////////////// Preguntar!!!\\\\\\\\\\\\\\\\\\\\\\\\\\\
+--- ///////////////////////////////////////////////// FIJARSE SI SALE ASI!!!\\\\\\\\\\\\\\\\\\\\\\\\\\\
 tesorosPorNivel :: Mapa -> [[Objeto]] -- Devuelve los tesoros separados por nivel en el árbol.
 tesorosPorNivel (Fin c)               = tesosrosDelCofre c : []
-tesorosPorNivel (Bifurcacion c m1 m2) = tesosrosDelCofre c : tesorosPorNivel m1
-                                             ++ tesorosPorNivel m2
+tesorosPorNivel (Bifurcacion c m1 m2) = (tesosrosDelCofre c : []) ++  tesorosPorNivel m1
+                                       ++ tesorosPorNivel m2
                                         
 
 tesosrosDelCofre :: Cofre -> [Objeto]
@@ -264,19 +264,15 @@ barrilesDeAlmacen (Almacen bs) = bs
 barrilesDeAlmacen _            = []
 
 
-{-- //////////////////////////////// en este tengo el problema de que al darme Naves, no puedo hacer la nave (ya que necesito un Tree Sector para eso)
 
 agregarASector :: [Componente] -> SectorId -> Nave -> Nave -- Añade una lista de componentes a un sector de la nave.
-agregarASector cs s (N t) = agregarComponentesASector cs s t
+agregarASector cs s (N t) = N( agregarComponentesASector cs s t)
 
-agregarComponentesASector :: [Componente] -> SectorId -> Tree Sector -> Nave
+agregarComponentesASector :: [Componente] -> SectorId -> Tree Sector -> Tree Sector
 agregarComponentesASector cs i EmptyT          = EmptyT
 agregarComponentesASector cs i (NodeT x t1 t2) = if esMismoSector i x
-                                                 then armarNaveConSector (NodeT (sectorConComponente  x cs) t1 t2)
-                                                 else armarNaveConSector (NodeT x (agregarComponentesASector cs i t1) (agregarComponentesASector cs i t2)    )
-
-armarNaveConSector :: Tree Sector -> Nave
-armarNaveConSector s = N s
+                                                 then NodeT (sectorConComponente  x cs) t1 t2
+                                                 else NodeT x (agregarComponentesASector cs i t1) (agregarComponentesASector cs i t2)    
 
 
 
@@ -284,53 +280,61 @@ sectorConComponente :: Sector -> [Componente] -> Sector
 sectorConComponente (S id cs ts) comtes = (S id (cs ++ comtes) ts)
 
 
-ERROR file:.\practico4.hs:272 - Type error in application
-*** Expression     : NodeT x (agregarComponentesASector cs i t1) (agregarComponentesASector cs i t2)
-*** Term           : agregarComponentesASector cs i t2
-*** Type           : Nave
-*** Does not match : Tree a
 
---}
 
 esMismoSector :: SectorId -> Sector -> Bool
 esMismoSector i (S id _ _) = i == id 
 
---- Mismo Problema que el anterior
---asignarTripulanteA :: Tripulante -> [SectorId] -> Nave -> Nave
---asignarTripulanteA t i (N a) = asignarTripulanteANave t i a
 
-asignarTripulanteANave :: Tripulante -> [SectorId] -> Tree Sector -> Nave
-asignarTripulanteANave t []      sec             = N sec
-asignarTripulanteANave t (i:ids) EmptyT          = N EmptyT  
---asignarTripulanteANave t (i:ids) (NodeT x t1 t2) = if  esMismoSector i x
-  --                                                  then N ( NodeT (agregarTripulanteASector t x) (asignarTripulanteANave t (i:ids) t1 ) (asignarTripulanteANave t (i:ids) t2 ))
-  --                                                  else N (NodeT x (asignarTripulanteANave t (i:ids) t1 ) (asignarTripulanteANave t (i:ids) t2 ))
+signarTripulanteA :: Tripulante -> [SectorId] -> Nave -> Nave
+asignarTripulanteA t i (N a) = N (asignarTripulanteANave t i a)
+
+asignarTripulanteANave :: Tripulante -> [SectorId] -> Tree Sector -> Tree Sector
+asignarTripulanteANave t []      sec             =  sec
+asignarTripulanteANave t (i:ids) EmptyT          =  EmptyT  
+asignarTripulanteANave t (i:ids) (NodeT x t1 t2) = if  esMismoSector i x
+                                                    then NodeT (agregarTripulanteASector t x) (asignarTripulanteANave t (i:ids) t1 ) (asignarTripulanteANave t (i:ids) t2 )
+                                                    else NodeT x (asignarTripulanteANave t (i:ids) t1 ) (asignarTripulanteANave t (i:ids) t2 )
 
 agregarTripulanteASector :: Tripulante -> Sector -> Sector
 agregarTripulanteASector t (S id obs trip) = (S id obs (t:trip))
 
-
-
-
---- ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-{--
-
-
-asignarTripulanteA :: Tripulante -> [SectorId] -> Nave -> Nave
-Propósito: Incorpora un tripulante a una lista de sectores de la nave.
-Precondición: Todos los id de la lista existen en la nave.
+            
 
 sectoresAsignados :: Tripulante -> Nave -> [SectorId]
-Propósito: Devuelve los sectores en donde aparece un tripulante dado.
+sectoresAsignados t (N a) = sectoresDeTrabajo t a
 
-tripulantes :: Nave -> [Tripulante]
-Propósito: Devuelve la lista de tripulantes, sin elementos repetidos.
+sectoresDeTrabajo :: Tripulante -> Tree Sector -> [SectorId]
+sectoresDeTrabajo  t EmptyT          = [] 
+sectoresDeTrabajo  t (NodeT x a1 a2) = idSiTrabaja x t ++
+                                        sectoresDeTrabajo t a1 ++
+                                        sectoresDeTrabajo t a2
 
--}
+
+idSiTrabaja :: Tripulante -> Sector -> [SectorId]
+idSiTrabaja t (S i _ ts) = singularSi (pertenece t ts) i
+
+
+
+
+tripulantes :: Nave -> [Tripulante] -- Devuelve la lista de tripulantes, sin elementos repetidos.
+tripulantes (N x) = sinRepetir ( todosLosTripulantes x )
+
+todosLosTripulantes :: Tree Sector ->  [Tripulante]
+todosLosTripulantes EmptyT          = []
+todosLosTripulantes (NodeT x t1 t2) = tripulantesDe x ++
+                                      todosLosTripulantes t1 ++
+                                      todosLosTripulantes t2 
+
+
+tripulantesDe :: Sector ->  [Tripulante]
+tripulantesDe (S _ _ ts) = ts
+
+sinRepetir :: [a] -> [a] -> [a] 
+sinRepetir []     ys = ys
+sinRepetir (x:xs) ys = if pertenece x ys
+                        then sinRepetir xs ys
+                        else x : sinRepetir xs ys 
 
 
 --------------------------------------------------------------------------
@@ -419,25 +423,87 @@ pertenece x []     = False
 pertenece x (y:ys) = x == y || pertenece x ys
 
 
---exploradoresPorTerritorio :: Manada -> [(Territorio, [Nombre])]
---exploradoresPorTerritorio (M l) = lobosExploradoresPorTerritorio l
+ exploradoresPorTerritorio :: Manada -> [(Territorio, [Nombre])]
+exploradoresPorTerritorio (M l) = lobosExploradoresPorTerritorio l
 
---lobosExploradoresPorTerritorio :: Lobo -> [(Territorio, [Nombre])]
---lobosExploradoresPorTerritorio (Cria _)                = []
---lobosExploradoresPorTerritorio (Cazador _ _ l1 l2 l3)  = lobosExploradoresPorTerritorio l1 ++
---                                                         lobosExploradoresPorTerritorio l2 ++
---                                                         lobosExploradoresPorTerritorio l3 ++
---lobosExploradoresPorTerritorio (Explorador n ts l1 l2) = 
+lobosExploradoresPorTerritorio :: Lobo -> [(Territorio, [Nombre])]
+lobosExploradoresPorTerritorio (Cria _)                = []
+lobosExploradoresPorTerritorio (Explorador n ts l1 l2) = exploradoresDeTerritorios n ts 
+                                                       ++ lobosExploradoresPorTerritorio l1 
+                                                       ++ lobosExploradoresPorTerritorio l2 
+lobosExploradoresPorTerritorio (Cazador _ _ l1 l2 l3)  =  lobosExploradoresPorTerritorio l1 
+                                                       ++ lobosExploradoresPorTerritorio l2 
+                                                       ++ lobosExploradoresPorTerritorio l3 
+                                                        
+exploradoresDeTerritorios :: Nombre -> [Territorio] -> [(Territorio, [Nombre])]
+exploradoresDeTerritorios n []     = []
+exploradoresDeTerritorios n (t:ts) =   agregarNombreAlTerritorio n t (exploradoresDeTerritorios n ts)
+
+agregarNombreAlTerritorio :: Nombre -> Territorio ->  [(Territorio, [Nombre])] ->  [(Territorio, [Nombre])]
+agregarNombreAlTerritorio n t []     = [(t, [n])]
+agregarNombreAlTerritorio n t (x:xs) = if esMismoTerritorio t x 
+                                        then agregarNombre n x : xs 
+                                        else agregarNombreAlTerritorio n t xs
 
 
-{-
+esMismoTerritorio :: Territorio -> (Territorio, [Nombre]) -> Bool 
+esMismoTerritorio    t1  (t2, _) = t1 == t2
 
-5.
-Propósito: dada una manada, denota la lista de los pares cuyo primer elemento es un territorio y cuyo segundo elemento es la lista de los nombres de los exploradores que exploraron
-dicho territorio. Los territorios no deben repetirse.
-6. superioresDelCazador :: Nombre -> Manada -> [Nombre]
-Propósito: dado un nombre de cazador y una manada, indica el nombre de todos los
-cazadores que tienen como subordinado al cazador dado (directa o indirectamente).
-Precondición: hay un cazador con dicho nombre y es único.
+agregarNombre :: Nombre -> (Territorio, [Nombre]) -> (Territorio, [Nombre]) 
+agregarNombre n (t, xs) = (t, n:xs)
 
--}
+
+
+
+superioresDelCazador :: Nombre -> Manada -> [Nombre]
+superioresDelCazador n (M l) = superioresDelLoboCazador n l
+
+superioresDelLoboCazador :: Nombre -> Lobo -> [Nombre]
+superioresDelLoboCazador n (Cria _)               = error "La cria no puede tener subordinados"
+superioresDelLoboCazador n (Explorador n1 _ l1 l2) = n : superioresDelLoboCazador n (subordinadoDe n [l1,l2] )
+superioresDelLoboCazador n (Cazador n1 _ l1 l2 l3) = n : superioresDelLoboCazador n (subordinadoDe n [l1,l2, l3] )
+
+subordinadoDe :: Nombre -> [Lobo] -> Lobo
+subordinadoDe n (l:[]) = l
+subordinadoDe n (l:ls) = if esLoboSubordinado n l
+                        then l
+                        else subordinadoDe n ls
+
+esLoboSubordinado :: Nombre -> Lobo -> Bool
+esLoboSubordinado n (Cria  _)                = False
+esLoboSubordinado n (Explorador _ _ l1 l2)  = estaElLoboSubordinado n [l1, l2]
+esLoboSubordinado n (Cazador _ _ l1 l2 l3) =  estaElLoboSubordinado n [l1, l2, l3]
+
+estaElLoboSubordinado :: Nombre -> [Lobo] -> Bool
+estaElLoboSubordinado n []     = False
+estaElLoboSubordinado n (l:ls) = esLoboBuscado n l || estaElLoboSubordinado n ls
+
+
+esLoboBuscado :: Nombre -> Lobo -> Bool
+esLoboBuscado n l =  n == (nombreDeLobo l)
+
+nombreDeLobo :: Lobo -> Nombre
+nombreDeLobo (Cazador n _ _ _ _)  = n
+nombreDeLobo (Explorador n _ _ _) = n
+nombreDeLobo (Cria n)             = n
+
+
+
+
+
+--- Esta es la forma correcta de solucionar cuentaRegresiva y agregar
+
+cuentaRegr :: Int -> [Int]
+cuentaRegr n if n < 0
+                then []
+                else cuentaR n
+
+
+cuentaR :: Int -> [Int]
+cuentaR  0  = []
+cuentaR  n  = n : cuentaR (n-1)
+
+
+agregar :: [a] -> [a] -> [a] 
+agregar []     ys = ys
+agregar (x:xs) ys = x : agregar xs ys 
