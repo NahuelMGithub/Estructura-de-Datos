@@ -295,7 +295,7 @@ proyectoDelRol (Developer  _ p) = p
 proyectoDelRol (Management _ p) = p
 
 --
-{- ESTE AUN NO LO TERMINE. 
+
 losDevSenior :: Empresa -> [Proyecto] -> Int
 losDevSenior (ConsEmpresa roles) ps = seniorEnProyectos roles ps
 
@@ -303,13 +303,9 @@ seniorEnProyectos :: [Rol] -> [Proyecto] -> Int
 seniorEnProyectos []     _  = 0 
 seniorEnProyectos (r:rs) ps = unoSi (seniorYParticipa r ps) + seniorEnProyectos rs ps
 
-
-MAL!!! TENGO QUE  COMPARAR STRING CON STRING PARA PODER VER SI ESTA, NO PROYECTO... UNA OBSERVADORA?
-ADEMAS PARECE TENER MUCHA RESPO
 seniorYParticipa :: Rol -> [Proyecto] -> Bool
 seniorYParticipa r []     = False
-seniorYParticipa r (p:ps) =  esSenior (seniorityDelRol r) && pertenece (proyectoDelRol r) ps... 
-
+seniorYParticipa r (p:ps) =  esSenior (seniorityDelRol r) && perteneceProyecto (proyectoDelRol r) ps 
 
 seniorityDelRol :: Rol -> Seniority
 seniorityDelRol (Developer  s _) = s
@@ -322,7 +318,7 @@ esSenior  _       = False
 singularSi :: Bool -> a -> [a]
 singularSi True  x = [x]
 singularSi False _ = []
--}
+
 
 unoSi :: Bool -> Int
 unoSi True  = 1
