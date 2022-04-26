@@ -300,12 +300,11 @@ losDevSenior :: Empresa -> [Proyecto] -> Int
 losDevSenior (ConsEmpresa roles) ps = seniorEnProyectos roles ps
 
 seniorEnProyectos :: [Rol] -> [Proyecto] -> Int
-seniorEnProyectos []     _  = 0 
 seniorEnProyectos (r:rs) ps = unoSi (seniorYParticipa r ps) + seniorEnProyectos rs ps
 
 seniorYParticipa :: Rol -> [Proyecto] -> Bool
-seniorYParticipa r []     = False
 seniorYParticipa r (p:ps) =  esSenior (seniorityDelRol r) && perteneceProyecto (proyectoDelRol r) ps 
+
 
 seniorityDelRol :: Rol -> Seniority
 seniorityDelRol (Developer  s _) = s
@@ -343,15 +342,22 @@ nombreProyecto (ConsProyecto s) = s
 
 
 asignadosPorProyecto :: Empresa -> [(Proyecto, Int)]
-asignadosPorProyecto (ConsEmpresa rs) = rolesAsignados rs
+asignadosPorProyecto (ConsEmpresa rs) = procesarProyectosDeRoles rs
 
-rolesAsignados :: [Rol] -> [(Proyecto, Int)]
-rolesAsignados []      =  []
-rolesAsignados (r:rs)  =  (proyectoDelRol r, cantidadEnProyecto (proyectoDelRol r) (r:rs))
-                            : rolesAsignados rs
+procesarProyectosDeRoles :: [Rol] -> [(Proyecto, Int)]
+procesarProyectosDeRoles []      = []
+procesarProyectosDeRoles (r:rs)  =  aumentarEnUnoTupla (proyectoDelRol r) (procesarProyectosDeRoles rs)
 
-cantidadEnProyecto :: Proyecto -> [Rol] -> Int
-cantidadEnProyecto p []     = 0
-cantidadEnProyecto p (r:rs) = unoSi (nombreProyecto p == nombreProyecto ( proyectoDelRol r) )
-                              + cantidadEnProyecto p rs
+aumentarEnUnoTupla :: Proyecto -> [(Proyecto, Int)] -> [(Proyecto, Int)] 
+aumentarEnUnoTupla p []     = [(p, 1)]
+aumentarEnUnoTupla p (x:xs) = if esMismoProyecto p x
+                                then tuplaAumentada x : xs
+                                else x : aumentarEnUnoTupla p xs
+
+esMismoProyecto :: Proyecto -> (Proyecto, Int) -> Bool
+esMismoProyecto p (x, _) = nombreProyecto p == nombreProyecto x
+
+
+tuplaAumentada :: (Proyecto, Int) -> (Proyecto, Int)
+tuplaAumentada (p, n) = (p, (n+1))
 
