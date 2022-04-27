@@ -86,9 +86,10 @@ hayTesoroAqui  _              = False
 
 
 alMenosNTesoros :: Int -> Camino -> Bool
-alMenosNTesoros n (Fin ) = n <= 0 
+alMenosNTesoros n (Fin )         = n <= 0 
+alMenosNTesoros n (Nada c )      = alMenosNTesoros c
 alMenosNTesoros n (Cofre obs c ) = n <= totalDeTesoros obs ||
-                                  alMenosNTesoros (n - totalDeTesoros obs  ) c
+                                     alMenosNTesoros (n - totalDeTesoros obs  ) c
 
 
 totalDeTesoros :: [Objeto] -> Int
@@ -161,10 +162,7 @@ aparicionesT e (NodeT elemento a1 a2) = unoSi ( e == elemento ) +
     
 leaves :: Tree a -> [a]
 leaves EmptyT          = []
-leaves (NodeT e a1 a2) = singularSi (esHoja a1 a2) e ++  leaves a1 ++  leaves a2
-
-esHoja :: Tree a -> Tree a -> Bool
-esHoja a1 a2 = (esVacio a1) && (esVacio a2)
+leaves (NodeT e a1 a2) = singularSi (esVacio a1 && esVacio a2) e ++  leaves a1 ++  leaves a2
 
 esVacio :: Tree a -> Bool
 esVacio EmptyT = True
@@ -240,13 +238,14 @@ consACada x (ys:yss) = (x:ys) : consACada x yss
 
 ----------------------------------   2.2 Expresiones Aritméticas
 
-data ExpA = Valor Int | Sum ExpA ExpA | Prod ExpA ExpA
+data ExpA = Valor Int | Sum ExpA ExpA | Prod ExpA ExpA | Neg ExpA
     deriving Show
 
 eval :: ExpA -> Int
 eval (Valor n)         = n
-eval (Sum  expA expB ) = eval expA  +  eval expB 
-eval (Prod expA expB ) = eval expA  *  eval expB 
+eval (Sum  expA expB ) = eval expA  + eval expB 
+eval (Prod expA expB ) = eval expA  * eval expB 
+eval (Neg expA)        = -1         * eval expA
 
 
 
@@ -254,11 +253,11 @@ eval (Prod expA expB ) = eval expA  *  eval expB
 
 
 simplificar :: ExpA -> ExpA
-simplificar (Sum  (Valor 0)    (Valor x))                       = Valor x
-simplificar (Sum  (Valor x)    (Valor 0))                       = Valor x
-simplificar (Prod (Valor 0)    (Valor x))                       = Valor 0 
-simplificar (Prod (Valor x)    (Valor 0))                       = Valor 0 
-simplificar (Prod (Valor 1)    (Valor x))                       = Valor x
-simplificar (Prod (Valor x)    (Valor 1))                       = Valor x
-simplificar (Prod (Valor (-1)) ((Prod (Valor (-1)) (Valor x)))) = Valor x
+simplificar (Sum  (Valor 0) expA )     = expA
+simplificar (Sum  expA      (Valor 0)) = expA
+simplificar (Prod (Valor 0) expA)      = Valor 0 
+simplificar (Prod expA      (Valor 0)) = Valor 0 
+simplificar (Prod (Valor 1) expA)      = expA
+simplificar (Prod expA      (Valor 1)) = expA
+simplificar (Neg (Neg expA))           = expA
 
