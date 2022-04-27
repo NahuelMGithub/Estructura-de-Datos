@@ -84,23 +84,19 @@ hayTesoroAqui :: Camino -> Bool
 hayTesoroAqui (Cofre cofre c) = hayTesoroEnCofre cofre
 hayTesoroAqui  _              = False
 
+
 alMenosNTesoros :: Int -> Camino -> Bool
-alMenosNTesoros n c = n <= cantidadDeTesoros c
+alMenosNTesoros n (Fin ) = n <= 0 
+alMenosNTesoros n (Cofre obs c ) = n <= totalDeTesoros obs ||
+                                  alMenosNTesoros (n - totalDeTesoros obs  ) c
 
-
-cantidadDeTesoros :: Camino -> Int
-cantidadDeTesoros Fin           = 0
-cantidadDeTesoros (Nada c)      = cantidadDeTesoros c
-cantidadDeTesoros (Cofre cof c) = totalDeTesoros cof + cantidadDeTesoros c
 
 totalDeTesoros :: [Objeto] -> Int
 totalDeTesoros []       = 0
 totalDeTesoros (o:objs) = unoSi(esTesoro o) + totalDeTesoros objs
 
+
 --- Desafio en clase
-
-
-
 
 
 ------------------------------------- 2. Tipos arbóreos
@@ -162,45 +158,33 @@ aparicionesT e (NodeT elemento a1 a2) = unoSi ( e == elemento ) +
                                             aparicionesT e a2 
 
 
-{-                       Este no me sale 2.1.6
+    
 leaves :: Tree a -> [a]
-leaves EmptyT                 = []
-leaves (NodeT e a1 a2) = agregarSiEsHoja (NodeT e a1 a2)  ++  leaves a1 ++  leaves a2
+leaves EmptyT          = []
+leaves (NodeT e a1 a2) = singularSi (esHoja a1 a2) e ++  leaves a1 ++  leaves a2
 
-esHoja :: Tree -> Bool
-esHoja (NodeT _ a1 a2) = (esVacio a1) && (esVacio a2)
-esHoja _               = False
+esHoja :: Tree a -> Tree a -> Bool
+esHoja a1 a2 = (esVacio a1) && (esVacio a2)
 
-esVacio :: Tree -> Bool
+esVacio :: Tree a -> Bool
 esVacio EmptyT = True
 esVacio _      = False
 
-agregarSiEsHoja ::  Bool -> Tre -> [a]
-agregarSi True (NodeT e a1 a2) = [e]
-agregarSi _     _              = []
 
--}
+singularSi :: Bool -> a -> [a]
+singularSi True  x = [x]
+singularSi False _ = []
 
-{--En heightT me da el error de tipo
+
 heightT :: Tree a -> Int
 heightT EmptyT = 0
-heightT (NodeT _ a1 a2) = 1 + mayor( (heightT a1)  (heightT a2) ) 
+heightT (NodeT _ a1 a2) = 1 + mayor (heightT a1)  (heightT a2) 
 
 mayor :: Int -> Int -> Int 
 mayor a b = if a > b 
              then a
              else b
 
-
-me da este error:
-
-ERROR file:.\practica3.hs:170 - Type error in application
-*** Expression     : heightT a1 (heightT a2)
-*** Term           : heightT
-*** Type           : Tree d -> Int
-*** Does not match : a -> b -> c
-
--}
 
 
 celdaC = Bolita Rojo CeldaVacia
@@ -260,9 +244,11 @@ data ExpA = Valor Int | Sum ExpA ExpA | Prod ExpA ExpA
     deriving Show
 
 eval :: ExpA -> Int
-eval (Valor n)                   = n
-eval (Sum  (Valor n) (Valor m) ) = n + m 
-eval (Prod (Valor n) (Valor m) ) = n * m
+eval (Valor n)         = n
+eval (Sum  expA expB ) = eval expA  +  eval expB 
+eval (Prod expA expB ) = eval expA  *  eval expB 
+
+
 
 -------------
 
