@@ -1,22 +1,26 @@
--- //////////////////////////////// 2. Set (conjunto) \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+-- //////////////////////////////// 2.1 Set (conjunto) \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 
-module Set
-    (Set, emptyS, addS, belongs,sizeS, removeS, unionS)--,setToList)
+module Set1
+    (Set, emptyS, addS, belongs,sizeS, removeS, unionS, setToList)
     where   
 
 data Set a = S [a]
+
+-- pensado para una Usuario que pregunta mucho, pero hace pocos ingresos
 
 emptyS :: Set a
 emptyS = S []
 
 addS :: Eq a => a -> Set a -> Set a
-addS x (S ys) = S (x:ys)
--- no era que los Sets no pueden tener elemtnos repetidos>?
+addS x (S ys) = if pertenece x ys   
+                 then S ys
+                 else S (x:ys)
+
 
 
 belongs :: Eq a => a -> Set a -> Bool
-belongs a (S xs) = pertenece a xs
+belongs x (S xs) = pertenece x xs
 
 pertenece :: Eq a => a -> [a] -> Bool
 pertenece x []     = False
@@ -24,8 +28,6 @@ pertenece x (y:ys) = x == y || pertenece x ys
 
 sizeS :: Eq a => Set a -> Int
 sizeS (S xs) = length xs
-
--- no era que los Sets no pueden tener elemtnos repetidos>?
 
 
 
@@ -53,5 +55,3 @@ unirSinRepetir (x:xs) ys = if pertenece x ys
 
 setToList :: Eq a => Set a -> [a]
 setToList (S xs) = xs
-
-
