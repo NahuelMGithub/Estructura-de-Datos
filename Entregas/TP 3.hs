@@ -265,9 +265,9 @@ negarSiEsNecesario e       = e
 
 
 quitarExpDeValorCero :: ExpA-> Exp A-> ExpA
-quitarExpDeValorCero  (Valor 0)  exp           = exp
-quitarExpDeValorCero  exp           (Valor 0)  = exp
-quitarExpDeValorCero  expA         expB        = Suma expA expB
+quitarExpDeValorCero  (Valor 0)  exp       = exp
+quitarExpDeValorCero  exp        (Valor 0) = exp
+quitarExpDeValorCero  expA       expB      = Suma expA expB
 
 
 simplificarProducto :: ExpA-> Exp A-> ExpA
