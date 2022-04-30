@@ -249,30 +249,26 @@ eval (Neg expA)        = -1         * eval expA
 
 
 
--------------
-
-
+---------------- con Fidel
 simplificar :: ExpA -> ExpA
 simplificar (Valor n)        = Valor n
-simplificar (Sum  expA expB) = quitarExpDeValorCero expA expB
-simplificar (Prod expA expB) = simplificarProducto expA expB 
-simplificar (Neg  expA)      = negarSiEsNecesario expA
+simplificar (Sum  expA expB) = armarSumaSimplificada    (simplificar  expA) (simplificar expB)
+simplificar (Prod expA expB) = armarProductoSimplificado (simplificar expA) (simplificar expB )
+simplificar (Neg  expA)      = armarNegacionSimplificada (simplificar expA)
 
 
-negarSiEsNecesario :: Exp -> ExpA
-negarSiEsNecesario (Neg e) = e
-negarSiEsNecesario e       = e
+armarSumaSimplificada ::  ExpA -> ExpA -> ExpA 
+armarSumaSimplificada  (Valor 0)  exp       = exp
+armarSumaSimplificada  exp        (Valor 0) = exp
+armarSumaSimplificada  expA       expB      = Suma expA expB
 
+armarProductoSimplificado :: ExpA-> Exp A-> ExpA
+armarProductoSimplificado (Valor 1) exp       = exp
+armarProductoSimplificado exp       (Valor 1) = exp
+armarProductoSimplificado (Valor 0) _         = Valor 0
+armarProductoSimplificado _         (Valor 0) = Valor 0
+armarProductoSimplificado expA      expB      = Prod expA expB
 
-quitarExpDeValorCero :: ExpA-> Exp A-> ExpA
-quitarExpDeValorCero  (Valor 0)  exp       = exp
-quitarExpDeValorCero  exp        (Valor 0) = exp
-quitarExpDeValorCero  expA       expB      = Suma expA expB
-
-
-simplificarProducto :: ExpA-> Exp A-> ExpA
-simplificarProducto (Valor 1) exp       = exp
-simplificarProducto exp       (Valor 1) = exp
-simplificarProducto (Valor 0) _         = Valor 0
-simplificarProducto _         (Valor 0) = Valor 0
-simplificarProducto expA      expB      = Prod expA expB
+armarNegacionSimplificada :: ExpA -> ExpA 
+armarNegacionSimplificada (Neg expA) = expA
+armarNegacionSimplificada expA             = Neg expA
