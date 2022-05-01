@@ -47,20 +47,20 @@ esQuesoOSalsa Queso = True
 esQuesoOSalsa Salsa = True
 esQuesoOSalsa _     = False
 
---- //////////////////////////////////////////////////////// NO FUNCIONA!!! pero no entiendo por que no funciona
+
 duplicarAceitunas :: Pizza -> Pizza
 duplicarAceitunas Prepizza   = Prepizza
 duplicarAceitunas (Capa i p) = if esAceituna i
-                                then Capa (dobleDeAceitunas i) p 
-                                else Capa i p
+                                then Capa (dobleDeAceitunas i) (duplicarAceitunas p) 
+                                else Capa i (duplicarAceitunas p)
 
 esAceituna :: Ingrediente -> Bool
 esAceituna (Aceitunas n) = True
 esAceituna _             = False
 
-dobleDeAceitunas :: Ingrediente -> Ingrediente -- Con el doble de aceitunas
+dobleDeAceitunas :: Ingrediente -> Ingrediente -- Duplica la cantidad de aceitunas
 dobleDeAceitunas (Aceitunas n) = (Aceitunas (2*n))
-------------- \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
 
 
 --Dada una lista de pizzas devuelve un par donde la primera componente es la cantidad de
@@ -371,7 +371,7 @@ Las crías poseen sólo un nombre y no poseen lobos a cargo.
 
 cazador1 = Cazador "Hunter" ["Liebre"] explorador1 explorador0 cria1
 cria1 = Cria "Cachorrito"
-explorador1 = Explorador "Patagon" ["Bosques", "Lagos", "Rios"] cria1 cria1
+explorador1 = Explorador "Patagon" ["Bosques", "Lagos", "Rios"] cria1 explorador0
 explorador0 = Explorador "Pampa" ["llanura", "Rios"] cria1 cria1
 
 manada1 = M cazador1
@@ -409,6 +409,8 @@ laDuplaMasGrande (x, n) (y, m) = if n >= m
                                   then (x, n)
                                   else (y, m)
 
+-----------------------------------------
+
 
 losQueExploraron :: Territorio -> Manada -> [Nombre]
 losQueExploraron t (M l) = exploradoresDelTerritorio t l 
@@ -426,7 +428,11 @@ perteneceT:: Territorio -> [Territorio] -> Bool
 perteneceT x []     = False
 perteneceT x (y:ys) = x == y || perteneceT x ys
 
+---------------------------------------
 
+-------------------------MAL! repite muchas tuplas. 
+
+{-
 exploradoresPorTerritorio :: Manada -> [(Territorio, [Nombre])]
 exploradoresPorTerritorio (M l) = lobosExploradoresPorTerritorio l
 
@@ -458,6 +464,84 @@ agregarNombre n (t, xs) = (t, n:xs)
 
 
 
+-------------------------------------------------
+
+-- ///////////////////////////////// exploradoresPorTerritorio nuevo intento \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+exploradoresPorTerritorio :: Manada -> [(Territorio, [Nombre])]
+exploradoresPorTerritorio (M l) = lobosExploradoresPorTerritorio l
+
+lobosExploradoresPorTerritorio :: Lobo -> [(Territorio, [Nombre])]
+lobosExploradoresPorTerritorio (Cria _)                = []
+lobosExploradoresPorTerritorio (Explorador n ts l1 l2) =        juntarExploradoresDeTerritorios 
+                                                                ((exploradoresDeTerritorios n ts) 
+                                                                (lobosExploradoresPorTerritorio l1 )) 
+                                                                (lobosExploradoresPorTerritorio l2 )
+
+lobosExploradoresPorTerritorio (Cazador _ _ l1 l2 l3) = 
+                                                         juntarExploradoresDeTerritorios  (lobosExploradoresPorTerritorio l1)
+                                                         (juntarExploradoresDeTerritorios 
+                                                          (lobosExploradoresPorTerritorio l2)
+                                                          (lobosExploradoresPorTerritorio l3))
+-}
+
+-- juntarExploradoresDeTerritorios [(Territorio, [Nombre])] -> [(Territorio, [Nombre])] -> [(Territorio, [Nombre])] 
+-- retorna la lista, con todos los territorios SIN repetir, agregando los nombres (Sin repetir)
+
+exploradoresDeTerritorios :: Nombre -> [Territorio] -> [(Territorio, [Nombre])] -> [(Territorio, [Nombre])] 
+exploradoresDeTerritorios _  []    lis  = lis
+exploradoresDeTerritorios n ts []       = distribuirNombreEnTerritorios n ts 
+--exploradoresDeTerritorios n (t:ts) lis  = agregarNombreATerritorioExplorado (n t ( exploradoresDeTerritorios n ts lis))
+
+-- En esta línea me inidica el error: 
+{-
+*** Expression     : n t (exploradoresDeTerritorios n ts lis)
+*** Term           : n
+*** Type           : [Char]
+*** Does not match : a -> b -> c
+-}
+
+
+distribuirNombreEnTerritorios ::  Nombre -> [Territorio] -> [(Territorio, [Nombre])] 
+distribuirNombreEnTerritorios n []     = []
+distribuirNombreEnTerritorios n (t:ts) = (t, [n]) : distribuirNombreEnTerritorios n ts
+
+agregarNombreATerritorioExplorado :: Nombre -> Territorio -> [(Territorio, [Nombre])] -> [(Territorio, [Nombre])] 
+agregarNombreATerritorioExplorado n t []        = [(t,[n])]
+agregarNombreATerritorioExplorado n t (x:xs) = if esMismoTerritorio t x
+                                                          then conNombreSiFalta n x : xs
+                                                          else x : agregarNombreATerritorioExplorado n t xs
+
+esMismoTerritorio :: Territorio -> (Territorio, [Nombre]) -> Bool 
+esMismoTerritorio    t1  (t2, _) = t1 == t2
+
+conNombreSiFalta :: Nombre -> (Territorio, [Nombre]) -> (Territorio, [Nombre]) 
+conNombreSiFalta n (t, ns) = (t, (agregarNombreSiFalta n ns) ) 
+
+agregarNombreSiFalta :: Nombre -> [Nombre] -> [Nombre]
+agregarNombreSiFalta n (xs) = if perteneceN n xs
+                                then xs
+                                else n : xs
+
+perteneceN:: Nombre -> [Nombre] -> Bool 
+perteneceN x []     = False
+perteneceN x (y:ys) = x == y || perteneceN x ys
+
+nyT1 :: [(Territorio, [Nombre])] 
+nyT1 = [("Bosque", ["Tami", "Nahue", "Ricardo"] ), ("Mar", ["Juan", "Vale", "Ricardo"] )]
+
+explo = ("Explorador", ["Bosque", "Islas", "Pantanos"])
+
+
+
+
+
+
+
+
+
+
+---------------------------------------------------------------------------------------
 
 superioresDelCazador :: Nombre -> Manada -> [Nombre]
 superioresDelCazador n (M l) = superioresDelLoboCazador n l
@@ -495,7 +579,7 @@ nombreDeLobo (Cria n)             = n
 
 
 
---- Esta es la forma correcta de solucionar cuentaRegresiva y agregar
+--- Esta es la forma correcta de solucionar cuentaRegresiva y agregar (Esto son notas tomadas en la clase, fuera del TP)
 
 cuentaRegr :: Int -> [Int]
 cuentaRegr n = if n < 0
