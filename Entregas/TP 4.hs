@@ -50,18 +50,12 @@ esQuesoOSalsa _     = False
 
 duplicarAceitunas :: Pizza -> Pizza
 duplicarAceitunas Prepizza   = Prepizza
-duplicarAceitunas (Capa i p) = if esAceituna i
-                                then Capa (dobleDeAceitunas i) (duplicarAceitunas p) 
-                                else Capa i (duplicarAceitunas p)
-
-esAceituna :: Ingrediente -> Bool
-esAceituna (Aceitunas n) = True
-esAceituna _             = False
+duplicarAceitunas (Capa i p) =   Capa (dobleDeAceitunas i) (duplicarAceitunas p) 
+                           
 
 dobleDeAceitunas :: Ingrediente -> Ingrediente -- Duplica la cantidad de aceitunas
 dobleDeAceitunas (Aceitunas n) = (Aceitunas (2*n))
-
-
+dobleDeAceitunas i             = i
 
 --Dada una lista de pizzas devuelve un par donde la primera componente es la cantidad de
 --ingredientes de la pizza, y la respectiva pizza como segunda componente.
@@ -94,6 +88,7 @@ mapa1 = Bifurcacion cof1 mapa0 mapa0
 mapa2 = Bifurcacion cof1 mapa1 mapa1
 mapa3 = Bifurcacion cof2 mapa1 mapa2
 mapa4 = Bifurcacion cof1 mapa1 (Bifurcacion cof1 (Fin cof2) (Fin cof1))
+mapa5 = Bifurcacion cof1 mapa1 (Bifurcacion cof1 (Fin cof2) mapa1)
 
 hayTesoro :: Mapa -> Bool --Indica si hay un tesoro en alguna parte del mapa.
 hayTesoro (Fin c)               = hayTesoroEnCofre c
@@ -114,13 +109,17 @@ esTesoro _      = False
 hayTesoroEn :: [Dir] -> Mapa -> Bool ----- No me convence como puse la recursion.
 --Indica si al final del camino hay un tesoro. Nota: el final de un camino se representa con una
 --lista vacía de direcciones.
-hayTesoroEn []     (Fin c)               = hayTesoroEnCofre c
-hayTesoroEn []     (Bifurcacion c m1 m2) = hayTesoroEnCofre c
+hayTesoroEn []     m             = hayTesoroEnCofre (cofreActualEnMapa m)
 hayTesoroEn (d:ds) (Fin c)               = False
 hayTesoroEn (d:ds) (Bifurcacion c m1 m2) = if esIzquierda d 
                                             then hayTesoroEn ds m1
                                             else hayTesoroEn ds m2
-                                        
+cofreActualEnMapa :: Mapa ->  Cofre
+cofreActualEnMapa (Fin c)             = c     
+cofreActualEnMapa (Bifurcacion c _ _) = c 
+
+
+
 esIzquierda :: Dir -> Bool
 esIzquierda Izq = True
 esIzquierda _   = False
@@ -147,11 +146,7 @@ caminoDeLaRamaMasLarga (Bifurcacion _ m1 m2) = if (longCamino m1) >  (longCamino
 
 longCamino :: Mapa -> Int
 longCamino (Fin _ )              = 0
-longCamino (Bifurcacion _ m1 m2) = 1 + mayorEntre (longCamino m1) (longCamino m2)
-
-mayorEntre n m = if n > m
-                then n 
-                else m
+longCamino (Bifurcacion _ m1 m2) = 1 + max (longCamino m1) (longCamino m2)
 
 
 
@@ -186,7 +181,8 @@ consACada :: a -> [[a]] -> [[a]]
 consACada x []     = [[x]]
 consACada x (ys:yss) = (x:ys) : consACada x yss
 
-
+-- Devuelve caminos duplicados, porque agrega por ambas ramas lo mismo... 
+--La idea es que por cada cofre haya exactamente un camino en el resultado.
 
 
 --------------------------------------------------------------------------
@@ -286,21 +282,39 @@ esMismoSector :: SectorId -> Sector -> Bool
 esMismoSector i (S id _ _) = i == id 
 
 
-signarTripulanteA :: Tripulante -> [SectorId] -> Nave -> Nave
-signarTripulanteA t i (N a) = N (asignarTripulanteANave t i a)
+asignarTripulanteA :: Tripulante -> [SectorId] -> Nave -> Nave
+--Propósito: Incorpora un tripulante a una lista de sectores de la nave.
+--Precondición: Todos los id de la lista existen en la nave.
+asignarTripulanteA t i (N a) = N (asignarTripulanteANave t i a)
 
 asignarTripulanteANave :: Tripulante -> [SectorId] -> Tree Sector -> Tree Sector
 asignarTripulanteANave t []      sec             =  sec
 asignarTripulanteANave t (i:ids) EmptyT          =  EmptyT  
 asignarTripulanteANave t (i:ids) (NodeT x t1 t2) = if  esMismoSector i x
-                                                    then NodeT (agregarTripulanteASector t x) (asignarTripulanteANave t (i:ids) t1 ) (asignarTripulanteANave t (i:ids) t2 )
-                                                    else NodeT x (asignarTripulanteANave t (i:ids) t1 ) (asignarTripulanteANave t (i:ids) t2 )
+                                                    then NodeT (agregarTripulanteASector t x) (asignarTripulanteANave t ids t1 ) (asignarTripulanteANave t ids t2 )
+                                                    else NodeT x (asignarTripulanteANave t ids t1 ) (asignarTripulanteANave t ids t2 )
 
 agregarTripulanteASector :: Tripulante -> Sector -> Sector
 agregarTripulanteASector t (S id obs trip) = (S id obs (t:trip))
 
             
+{-
+data Componente = LanzaTorpedos | Motor Int | Almacen [Barril]
+data Barril = Comida | Oxigeno | Torpedo | Combustible
+data Sector = S SectorId [Componente] [Tripulante]
+type SectorId = String
+type Tripulante = String
+data Tree a = EmptyT | NodeT a (Tree a) (Tree a)
+data Nave = N (Tree Sector)
+-}
 
+--Básicamente, solamente usás el PRIMER SectorId, puesto que NUNCA mirás en is. Esto es culpa de usar doble PM en lugar de confiar 
+--en subtareas. NO SE ABRE un parámetro a menos que sea necesario...
+
+
+
+
+----
 sectoresAsignados :: Tripulante -> Nave -> [SectorId]
 sectoresAsignados t (N a) = sectoresDeTrabajo t a
 
