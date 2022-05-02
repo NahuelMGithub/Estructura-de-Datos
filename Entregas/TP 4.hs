@@ -430,42 +430,6 @@ perteneceT x (y:ys) = x == y || perteneceT x ys
 
 ---------------------------------------
 
--------------------------MAL! repite muchas tuplas. 
-
-{-
-exploradoresPorTerritorio :: Manada -> [(Territorio, [Nombre])]
-exploradoresPorTerritorio (M l) = lobosExploradoresPorTerritorio l
-
-lobosExploradoresPorTerritorio :: Lobo -> [(Territorio, [Nombre])]
-lobosExploradoresPorTerritorio (Cria _)                = []
-lobosExploradoresPorTerritorio (Explorador n ts l1 l2) = exploradoresDeTerritorios n ts 
-                                                       ++ lobosExploradoresPorTerritorio l1 
-                                                       ++ lobosExploradoresPorTerritorio l2 
-lobosExploradoresPorTerritorio (Cazador _ _ l1 l2 l3)  =  lobosExploradoresPorTerritorio l1 
-                                                       ++ lobosExploradoresPorTerritorio l2 
-                                                       ++ lobosExploradoresPorTerritorio l3 
-                                                        
-exploradoresDeTerritorios :: Nombre -> [Territorio] -> [(Territorio, [Nombre])]
-exploradoresDeTerritorios n []     = []
-exploradoresDeTerritorios n (t:ts) =   agregarNombreAlTerritorio n t (exploradoresDeTerritorios n ts)
-
-agregarNombreAlTerritorio :: Nombre -> Territorio ->  [(Territorio, [Nombre])] ->  [(Territorio, [Nombre])]
-agregarNombreAlTerritorio n t []     = [(t, [n])]
-agregarNombreAlTerritorio n t (x:xs) = if esMismoTerritorio t x 
-                                        then agregarNombre n x : xs 
-                                        else agregarNombreAlTerritorio n t xs
-
-
-esMismoTerritorio :: Territorio -> (Territorio, [Nombre]) -> Bool 
-esMismoTerritorio    t1  (t2, _) = t1 == t2
-
-agregarNombre :: Nombre -> (Territorio, [Nombre]) -> (Territorio, [Nombre]) 
-agregarNombre n (t, xs) = (t, n:xs)
-
-
-
--------------------------------------------------
-
 -- ///////////////////////////////// exploradoresPorTerritorio nuevo intento \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 exploradoresPorTerritorio :: Manada -> [(Territorio, [Nombre])]
@@ -473,33 +437,43 @@ exploradoresPorTerritorio (M l) = lobosExploradoresPorTerritorio l
 
 lobosExploradoresPorTerritorio :: Lobo -> [(Territorio, [Nombre])]
 lobosExploradoresPorTerritorio (Cria _)                = []
-lobosExploradoresPorTerritorio (Explorador n ts l1 l2) =        juntarExploradoresDeTerritorios 
-                                                                ((exploradoresDeTerritorios n ts) 
-                                                                (lobosExploradoresPorTerritorio l1 )) 
-                                                                (lobosExploradoresPorTerritorio l2 )
+lobosExploradoresPorTerritorio (Explorador n ts l1 l2) =        exploradoresDeTerritorios n ts 
+                                                                (juntarTerritorios
+                                                                (lobosExploradoresPorTerritorio l1 ) 
+                                                                (lobosExploradoresPorTerritorio l2 ))
 
-lobosExploradoresPorTerritorio (Cazador _ _ l1 l2 l3) = 
-                                                         juntarExploradoresDeTerritorios  (lobosExploradoresPorTerritorio l1)
-                                                         (juntarExploradoresDeTerritorios 
-                                                          (lobosExploradoresPorTerritorio l2)
-                                                          (lobosExploradoresPorTerritorio l3))
--}
+lobosExploradoresPorTerritorio (Cazador _ _ l1 l2 l3) =  juntarTerritorios (lobosExploradoresPorTerritorio l1) 
+                                                             (juntarTerritorios (lobosExploradoresPorTerritorio l2) 
+                                                                                (lobosExploradoresPorTerritorio l3)) 
+                                                    
 
--- juntarExploradoresDeTerritorios [(Territorio, [Nombre])] -> [(Territorio, [Nombre])] -> [(Territorio, [Nombre])] 
--- retorna la lista, con todos los territorios SIN repetir, agregando los nombres (Sin repetir)
+juntarTerritorios :: [(Territorio, [Nombre])] -> [(Territorio, [Nombre])] -> [(Territorio, [Nombre])] 
+juntarTerritorios []     xs = xs
+juntarTerritorios (y:ys) xs = juntarTerritorioYNombres y  (juntarTerritorios ys xs)
+
+juntarTerritorioYNombres :: (Territorio, [Nombre])  -> [(Territorio, [Nombre])] -> [(Territorio, [Nombre])] 
+juntarTerritorioYNombres   xs  []     = [xs]
+juntarTerritorioYNombres   xs (y:ys)  = if  (territorioDe xs) == (territorioDe y) 
+                                        then (territorioDe y, (unirListaDeNombres (nombresDe xs) (nombresDe y))) : ys
+                                        else y : juntarTerritorioYNombres  xs ys
+                                        
+territorioDe :: (Territorio, [Nombre]) -> Territorio
+territorioDe (t, _) = t
+
+nombresDe :: (Territorio, [Nombre]) -> [Nombre]
+nombresDe (_, ns) = ns
+
+unirListaDeNombres :: [Nombre] -> [Nombre] -> [Nombre]
+unirListaDeNombres []     xs = xs
+unirListaDeNombres (n:ns) xs = if perteneceN n xs
+                                then unirListaDeNombres ns xs
+                                else n : unirListaDeNombres ns xs
+
 
 exploradoresDeTerritorios :: Nombre -> [Territorio] -> [(Territorio, [Nombre])] -> [(Territorio, [Nombre])] 
 exploradoresDeTerritorios _  []    lis  = lis
 exploradoresDeTerritorios n ts []       = distribuirNombreEnTerritorios n ts 
---exploradoresDeTerritorios n (t:ts) lis  = agregarNombreATerritorioExplorado (n t ( exploradoresDeTerritorios n ts lis))
-
--- En esta línea me inidica el error: 
-{-
-*** Expression     : n t (exploradoresDeTerritorios n ts lis)
-*** Term           : n
-*** Type           : [Char]
-*** Does not match : a -> b -> c
--}
+exploradoresDeTerritorios n (t:ts) lis  = agregarNombreATerritorioExplorado n t ( exploradoresDeTerritorios n ts lis)
 
 
 distribuirNombreEnTerritorios ::  Nombre -> [Territorio] -> [(Territorio, [Nombre])] 
@@ -527,12 +501,32 @@ perteneceN:: Nombre -> [Nombre] -> Bool
 perteneceN x []     = False
 perteneceN x (y:ys) = x == y || perteneceN x ys
 
-nyT1 :: [(Territorio, [Nombre])] 
-nyT1 = [("Bosque", ["Tami", "Nahue", "Ricardo"] ), ("Mar", ["Juan", "Vale", "Ricardo"] )]
 
-explo = ("Explorador", ["Bosque", "Islas", "Pantanos"])
+{-     charla con Fidel 
+Y entonces, para el explorador n tendrías que armar algo del mismo tipo, y juntarlo
+O sea, si lobosExploradoresPorTerritorio devuelve una lista...
+...hacé una operación juntarTerritorios que tome dos de esas y devuelva otra con todo junto
+Luego usá esa para encarar las recursiónes
+Y para agregar a n, vas a precisar tener algo del mismo tipo, y volver a usar esa
 
 
+
+CON ACUMULADOR> 
+Cuando vos hiciste exploradoresDeTerritorios :: Nombre -> [Territorio] -> [(Territorio, [Nombre])] -> [(Territorio, [Nombre])] tu tercer 
+argumento es algo a lo que le vas a agregar los datos necesarios
+ESO se llama acumulador
+O sea, le estás dando una lista para que te la "complete" y te la devuelva con lo que tenía y un poco más
+O sea, acumularle los resultados 😉
+En general, un acumulador en Haskell toma la forma de una función que modifica un dato
+Entonces hago agregar :: Esto -> AcumuladorAntes -> AcumuladorDespués
+O mejor agregar :: Esto -> BaseDeAcumulacion -> AcumuladorConEsto
+
+
+Pero si lo hacés para exploradoresDeTerritorios, deberías hacerlo también para lobosExploradoresPorTerritorio
+(yo las llamaría agregarExploradorA y agregarExploradoresDeManadaA...) 
+
+
+-}
 
 
 
