@@ -460,61 +460,27 @@ lobosExploradoresPorTerritorio (Cazador _ _ l1 l2 l3) =  juntarTerritorios (lobo
                                                              (juntarTerritorios (lobosExploradoresPorTerritorio l2) 
                                                                                 (lobosExploradoresPorTerritorio l3)) 
                                                     
-
 juntarTerritorios :: [(Territorio, [Nombre])] -> [(Territorio, [Nombre])] -> [(Territorio, [Nombre])] 
 juntarTerritorios []     xs = xs
 juntarTerritorios (y:ys) xs = juntarTerritorioYNombres y  (juntarTerritorios ys xs)
 
 juntarTerritorioYNombres :: (Territorio, [Nombre])  -> [(Territorio, [Nombre])] -> [(Territorio, [Nombre])] 
 juntarTerritorioYNombres   xs  []     = [xs]
-juntarTerritorioYNombres   xs (y:ys)  = if  (territorioDe xs) == (territorioDe y) 
-                                        then (territorioDe y, (unirListaDeNombres (nombresDe xs) (nombresDe y))) : ys
+juntarTerritorioYNombres   xs (y:ys)  = if  (fst xs) == (fst y)
+                                        then (fst y, ((snd xs) ++ (snd y))) : ys
                                         else y : juntarTerritorioYNombres  xs ys
-                                        
-territorioDe :: (Territorio, [Nombre]) -> Territorio
-territorioDe (t, _) = t
-
-nombresDe :: (Territorio, [Nombre]) -> [Nombre]
-nombresDe (_, ns) = ns
-
-unirListaDeNombres :: [Nombre] -> [Nombre] -> [Nombre]
-unirListaDeNombres []     xs = xs
-unirListaDeNombres (n:ns) xs = if perteneceN n xs
-                                then unirListaDeNombres ns xs
-                                else n : unirListaDeNombres ns xs
-
-
+                
+                             
 exploradoresDeTerritorios :: Nombre -> [Territorio] -> [(Territorio, [Nombre])] -> [(Territorio, [Nombre])] 
-exploradoresDeTerritorios _  []    lis  = lis
-exploradoresDeTerritorios n ts []       = distribuirNombreEnTerritorios n ts 
-exploradoresDeTerritorios n (t:ts) lis  = agregarNombreATerritorioExplorado n t ( exploradoresDeTerritorios n ts lis)
+exploradoresDeTerritorios _ []      lis  = lis
+exploradoresDeTerritorios n (t:ts)  lis  = distribuirNombreEnTerritorios n t (exploradoresDeTerritorios  n ts lis)
 
-
-distribuirNombreEnTerritorios ::  Nombre -> [Territorio] -> [(Territorio, [Nombre])] 
-distribuirNombreEnTerritorios n []     = []
-distribuirNombreEnTerritorios n (t:ts) = (t, [n]) : distribuirNombreEnTerritorios n ts
-
-agregarNombreATerritorioExplorado :: Nombre -> Territorio -> [(Territorio, [Nombre])] -> [(Territorio, [Nombre])] 
-agregarNombreATerritorioExplorado n t []        = [(t,[n])]
-agregarNombreATerritorioExplorado n t (x:xs) = if esMismoTerritorio t x
-                                                          then conNombreSiFalta n x : xs
-                                                          else x : agregarNombreATerritorioExplorado n t xs
-
-esMismoTerritorio :: Territorio -> (Territorio, [Nombre]) -> Bool 
-esMismoTerritorio    t1  (t2, _) = t1 == t2
-
-conNombreSiFalta :: Nombre -> (Territorio, [Nombre]) -> (Territorio, [Nombre]) 
-conNombreSiFalta n (t, ns) = (t, (agregarNombreSiFalta n ns) ) 
-
-agregarNombreSiFalta :: Nombre -> [Nombre] -> [Nombre]
-agregarNombreSiFalta n (xs) = if perteneceN n xs
-                                then xs
-                                else n : xs
-
-perteneceN:: Nombre -> [Nombre] -> Bool 
-perteneceN x []     = False
-perteneceN x (y:ys) = x == y || perteneceN x ys
-
+distribuirNombreEnTerritorios :: Nombre -> Territorio -> [(Territorio, [Nombre])] -> [(Territorio, [Nombre])] 
+distribuirNombreEnTerritorios n t []     = [(t, [n])]
+distribuirNombreEnTerritorios n t (x:xs) = if t == (fst x)
+                                            then (t,  n : (snd x)) : xs  
+                                            else x :distribuirNombreEnTerritorios n t xs 
+                                    
 
 {-     charla con Fidel 
 Y entonces, para el explorador n tendrías que armar algo del mismo tipo, y juntarlo
