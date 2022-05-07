@@ -24,7 +24,7 @@ longitud (x:xs) = 1 + longitud xs
 factoriales :: [Int] -> [Int]
 factoriales [] = []
 factoriales (x:xs) = factorial x : factoriales xs
--- Costo: Cuadrático
+-- Costo: O(N*2) donde N, es la longitud de la lista
 
 pertenece :: Eq a => a -> [a] -> Bool
 pertenece n [] = False
@@ -43,18 +43,18 @@ sinRepetidos (x:xs) = if pertenece x xs
 append :: [a] -> [a] -> [a]
 append [] ys = ys
 append (x:xs) ys = x : append xs ys
--- Costo: Lineal
+-- Costo: O(n), donde n es la longitud de la primer lista 
 
 concatenar :: [String] -> String
 concatenar [] = []
 concatenar (x:xs) = x ++ concatenar xs
--- Costo: Lineal
+-- Costo: O(n), donde n es la longitud de la lista 
 
 takeN :: Int -> [a] -> [a]
 takeN 0 xs = []
 takeN n [] = []
 takeN n (x:xs) = x : takeN (n-1) xs
--- Costo: Cuadrático
+-- Costo: O(n) donde n es el número (el Int) 
 
 
 dropN :: Int -> [a] -> [a]
@@ -65,7 +65,7 @@ dropN n (x:xs) = dropN (n-1) xs
 
 partir :: Int -> [a] -> ([a], [a])
 partir n xs = (takeN n xs, dropN n xs)
--- Costo: Cuadrático
+-- Costo:  O(n) donde n es el número (el Int) 
 
 minimo :: Ord a => [a] -> a
 minimo [x] = x
