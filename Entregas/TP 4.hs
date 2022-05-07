@@ -126,7 +126,7 @@ esIzquierda _   = False
 
 
 
--- Si, es feo, pero no se como resolver si hay justo tesoro en el primer Cofre Cofre 
+{- caminoAlTesoro MAL
 caminoAlTesoro :: Mapa -> [Dir] -- Indica el camino al tesoro. Precondición: existe un tesoro y es único.
 caminoAlTesoro (Fin c)               = []
 caminoAlTesoro (Bifurcacion c m1 m2) = if hayTesoroEnCofre c 
@@ -134,8 +134,24 @@ caminoAlTesoro (Bifurcacion c m1 m2) = if hayTesoroEnCofre c
                                         else if  hayTesoro m1
                                             then Izq : caminoAlTesoro m1
                                             else Der : caminoAlTesoro m2
+-}
+
+--caminoAlTesoro :: Mapa -> [Dir] 
+--caminoAlTesoro (Fin c)   = []
+--caminoAlTesoro (Bifurcacion c m1 m2) = dirAlTesoro
+
+{-
+data Dir = Izq | Der
+data Objeto = Tesoro | Chatarra
+data Cofre = Cofre [Objeto]
+data Mapa = Fin Cofre
+| Bifurcacion Cofre Mapa Mapa
+-}
 
 
+
+
+{- MAL
 caminoDeLaRamaMasLarga :: Mapa -> [Dir]
 caminoDeLaRamaMasLarga (Fin _)               = []
 caminoDeLaRamaMasLarga (Bifurcacion _ m1 m2) = if (longCamino m1) >  (longCamino m2) 
@@ -144,10 +160,25 @@ caminoDeLaRamaMasLarga (Bifurcacion _ m1 m2) = if (longCamino m1) >  (longCamino
 
 
 
-longCamino :: Mapa -> Int
-longCamino (Fin _ )              = 0
-longCamino (Bifurcacion _ m1 m2) = 1 + max (longCamino m1) (longCamino m2)
+-}
 
+caminoDeLaRamaMasLarga :: Mapa -> [Dir]
+caminoDeLaRamaMasLarga (Fin _)               = []
+caminoDeLaRamaMasLarga (Bifurcacion _ m1 m2) =   dirDeCaminoMasLargo (caminoDeLaRamaMasLarga m1) (caminoDeLaRamaMasLarga m2)
+                                                : mayorCamino (caminoDeLaRamaMasLarga m1) (caminoDeLaRamaMasLarga m2)         
+
+
+mayorCamino :: [Dir]-> [Dir]-> [Dir]
+mayorCamino iz ds = if (length iz) > (length ds)
+                    then iz
+                    else ds
+
+dirDeCaminoMasLargo ::  [Dir]-> [Dir]-> Dir
+dirDeCaminoMasLargo iz ds = if (length iz) > (length ds)
+                    then Izq
+                    else Der
+
+---------------------------------------------------------------------------------------------------------------------
 
 
 tesorosPorNivel :: Mapa -> [[Objeto]] -- Devuelve los tesoros separados por nivel en el árbol.
@@ -173,7 +204,7 @@ singularSi False _ = []
 
 todosLosCaminos :: Mapa -> [[Dir]] --Devuelve todos lo caminos en el mapa.
 todosLosCaminos (Fin _)               = []
-todosLosCaminos (Bifurcacion _ m1 m2) = consACada Izq (todosLosCaminos m1)
+todosLosCaminos (Bifurcacion _ m1 m2) =  consACada Izq (todosLosCaminos m1)
                                         ++ consACada Der (todosLosCaminos m2)
 
 
@@ -290,26 +321,16 @@ asignarTripulanteA t i (N a) = N (asignarTripulanteANave t i a)
 asignarTripulanteANave :: Tripulante -> [SectorId] -> Tree Sector -> Tree Sector
 asignarTripulanteANave t []      sec             =  sec
 asignarTripulanteANave t (i:ids) EmptyT          =  EmptyT  
-asignarTripulanteANave t (i:ids) (NodeT x t1 t2) = if  esMismoSector i x
-                                                    then NodeT (agregarTripulanteASector t x) (asignarTripulanteANave t ids t1 ) (asignarTripulanteANave t ids t2 )
-                                                    else NodeT x (asignarTripulanteANave t ids t1 ) (asignarTripulanteANave t ids t2 )
+asignarTripulanteANave t (i:ids) (NodeT x t1 t2) = NodeT (agregarTripulanteSiEsMismosector t i x) (asignarTripulanteANave t ids t1 ) (asignarTripulanteANave t ids t2 )
+    
+agregarTripulanteSiEsMismosector :: Tripulante -> SectorId -> Sector -> Sector 
+agregarTripulanteSiEsMismosector t id sec = if esMismoSector id sec
+                                             then agregarTripulanteASector t sec
+                                             else sec
+                                   
 
 agregarTripulanteASector :: Tripulante -> Sector -> Sector
 agregarTripulanteASector t (S id obs trip) = (S id obs (t:trip))
-
-            
-{-
-data Componente = LanzaTorpedos | Motor Int | Almacen [Barril]
-data Barril = Comida | Oxigeno | Torpedo | Combustible
-data Sector = S SectorId [Componente] [Tripulante]
-type SectorId = String
-type Tripulante = String
-data Tree a = EmptyT | NodeT a (Tree a) (Tree a)
-data Nave = N (Tree Sector)
--}
-
---Básicamente, solamente usás el PRIMER SectorId, puesto que NUNCA mirás en is. Esto es culpa de usar doble PM en lugar de confiar 
---en subtareas. NO SE ABRE un parámetro a menos que sea necesario...
 
 
 
@@ -332,6 +353,7 @@ pertenece :: Eq a => a -> [a] -> Bool
 pertenece x []     = False
 pertenece x (y:ys) = x == y || pertenece x ys
 
+-- 7
 
 tripulantes :: Nave -> [Tripulante] -- Devuelve la lista de tripulantes, sin elementos repetidos.
 tripulantes (N x) =  sinRepetirTripulantes (todosLosTripulantes x)
@@ -349,9 +371,12 @@ tripulantesDe (S _ _ ts) = ts
 
 sinRepetirTripulantes :: [Tripulante] -> [Tripulante] 
 sinRepetirTripulantes []      = []
-sinRepetirTripulantes (t:ts)  = if pertenece t ts
-                                   then sinRepetirTripulantes ts 
-                                   else t : sinRepetirTripulantes ts
+sinRepetirTripulantes (t:ts)  = agregarSiFalta  t (sinRepetirTripulantes ts)
+
+agregarSiFalta :: Tripulante -> [Tripulante] -> [Tripulante]
+agregarSiFalta  t ts   = if pertenece t ts
+                                   then  ts 
+                                   else t :  ts
  
 
 
@@ -455,32 +480,52 @@ lobosExploradoresPorTerritorio (Explorador n ts l1 l2) =        exploradoresDeTe
                                                                 (juntarTerritorios
                                                                 (lobosExploradoresPorTerritorio l1 ) 
                                                                 (lobosExploradoresPorTerritorio l2 ))
-
 lobosExploradoresPorTerritorio (Cazador _ _ l1 l2 l3) =  juntarTerritorios (lobosExploradoresPorTerritorio l1) 
                                                              (juntarTerritorios (lobosExploradoresPorTerritorio l2) 
                                                                                 (lobosExploradoresPorTerritorio l3)) 
                                                     
+
 juntarTerritorios :: [(Territorio, [Nombre])] -> [(Territorio, [Nombre])] -> [(Territorio, [Nombre])] 
 juntarTerritorios []     xs = xs
 juntarTerritorios (y:ys) xs = juntarTerritorioYNombres y  (juntarTerritorios ys xs)
 
 juntarTerritorioYNombres :: (Territorio, [Nombre])  -> [(Territorio, [Nombre])] -> [(Territorio, [Nombre])] 
-juntarTerritorioYNombres   xs  []     = [xs]
-juntarTerritorioYNombres   xs (y:ys)  = if  (fst xs) == (fst y)
-                                        then (fst y, ((snd xs) ++ (snd y))) : ys
-                                        else y : juntarTerritorioYNombres  xs ys
-                
-                             
-exploradoresDeTerritorios :: Nombre -> [Territorio] -> [(Territorio, [Nombre])] -> [(Territorio, [Nombre])] 
-exploradoresDeTerritorios _ []      lis  = lis
-exploradoresDeTerritorios n (t:ts)  lis  = distribuirNombreEnTerritorios n t (exploradoresDeTerritorios  n ts lis)
+juntarTerritorioYNombres   (t, ns)  []     = [(t, ns)]
+juntarTerritorioYNombres   (t, ns) ((t1, nss) : tsyns)  = if  t == t1
+                                                            then (t1, (ns ++ nss)) : tsyns
+                                                            else(t1, nss) : juntarTerritorioYNombres  (t, ns) tsyns
 
-distribuirNombreEnTerritorios :: Nombre -> Territorio -> [(Territorio, [Nombre])] -> [(Territorio, [Nombre])] 
-distribuirNombreEnTerritorios n t []     = [(t, [n])]
-distribuirNombreEnTerritorios n t (x:xs) = if t == (fst x)
-                                            then (t,  n : (snd x)) : xs  
-                                            else x :distribuirNombreEnTerritorios n t xs 
-                                    
+
+exploradoresDeTerritorios :: Nombre -> [Territorio] -> [(Territorio, [Nombre])] -> [(Territorio, [Nombre])] 
+exploradoresDeTerritorios _  []    lis  = lis
+exploradoresDeTerritorios n ts []       = distribuirNombreEnTerritorios n ts 
+exploradoresDeTerritorios n (t:ts) lis  = agregarNombreATerritorioExplorado n t ( exploradoresDeTerritorios n ts lis)
+
+
+distribuirNombreEnTerritorios ::  Nombre -> [Territorio] -> [(Territorio, [Nombre])] 
+distribuirNombreEnTerritorios n []     = []
+distribuirNombreEnTerritorios n (t:ts) = (t, [n]) : distribuirNombreEnTerritorios n ts
+
+agregarNombreATerritorioExplorado :: Nombre -> Territorio -> [(Territorio, [Nombre])] -> [(Territorio, [Nombre])] 
+agregarNombreATerritorioExplorado n t []        = [(t,[n])]
+agregarNombreATerritorioExplorado n t ((t1, ns) : tsyns) = if  t == t1
+                                                          then conNombreSiFalta n (t1, ns) : tsyns
+                                                          else (t1, ns) : agregarNombreATerritorioExplorado n t tsyns
+
+
+
+conNombreSiFalta :: Nombre -> (Territorio, [Nombre]) -> (Territorio, [Nombre]) 
+conNombreSiFalta n (t, ns) = (t, (agregarNombreSiFalta n ns) ) 
+
+agregarNombreSiFalta :: Nombre -> [Nombre] -> [Nombre]
+agregarNombreSiFalta n (xs) = if perteneceN n xs
+                                then xs
+                                else n : xs
+
+perteneceN:: Nombre -> [Nombre] -> Bool 
+perteneceN x []     = False
+perteneceN x (y:ys) = x == y || perteneceN x ys
+
 
 {-     charla con Fidel 
 Y entonces, para el explorador n tendrías que armar algo del mismo tipo, y juntarlo
