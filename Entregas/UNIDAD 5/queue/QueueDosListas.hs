@@ -24,6 +24,8 @@ queue :: a -> Queue a -> Queue a --Dados un elemento y una cola, agrega ese elem
 firstQ :: Queue a -> a --Dada una cola devuelve el primer elemento de la cola.
 dequeue :: Queue a -> Queue a --Dada una cola la devuelve sin su primer elemento.
 
+--INV.REP: la primer lista no puede estar vacía si la segunda lista tiene elementos.
+
 -- Costo: O(1)
 emptyQ = Q [] [] 
 
@@ -44,11 +46,32 @@ agregarEnBs :: a -> Queue a -> Queue a
 agregarEnBs x (Q xs ys) = Q xs (x:ys)
 
 -}
+-- Costo: O(1)
+firstQ (Q fs bs) = head fs
+             
 
-firstQ (Q fs bs) = if null bs 
-             then last fs
-             else last bs
+{-
+secuencia esperada
+tengo esto  [1]     [2,3] 
+agrego      [1]     [2,3,4]
+saco        [2,3,4] []
+agrego      [2,3,4] [5]
+agrego      [2,3,4] [5, 6]
+saco        [3,4] [5, 6]
+-} 
 
-dequeue (Q fs bs) = Q (tail fs ++ bs) []
 
+-- Costo: O(1) el costo es amortizado, ya que la función posee un costo 1, en caso de que fs tenga mas de un elemento.
+-- y posee un costo elevado (n*2, donde n es la longitud de bs) pero SOLO en caso de que fs tenga un único elemento.
+dequeue (Q fs bs) = if tieneUnSoloElemento fs
+                    then (Q (reversa bs) [])
+                    else (Q (tail fs) bs)
+-- Costo: O(1)    
+tieneUnSoloElemento :: [a] -> Bool
+tieneUnSoloElemento (x: []) = True
+tieneUnSoloElemento _       = False
 
+-- Costo: O(n*2) donde n es la longitud de la lista
+reversa :: [a] -> [a]
+reversa []      = []
+reversa  (x:xs) = reversa xs ++ [x]

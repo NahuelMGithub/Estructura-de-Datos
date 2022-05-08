@@ -15,6 +15,8 @@ removeS :: Eq a => a -> Set a -> Set a --Borra un elemento del conjunto.
 unionS :: Eq a => Set a -> Set a -> Set a --Dados dos conjuntos devuelve un conjunto con todos los elementos de ambos. conjuntos.
 setToList :: Eq a => Set a -> [a] --Dado un conjunto devuelve una lista con todos los elementos distintos del conjunto.
 
+--INV.REP: No posee.
+
 -- Costo: O(1) 
 emptyS = S []
 

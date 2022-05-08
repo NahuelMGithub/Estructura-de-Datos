@@ -14,6 +14,8 @@ queue :: a -> Queue a -> Queue a --Dados un elemento y una cola, agrega ese elem
 firstQ :: Queue a -> a --Dada una cola devuelve el primer elemento de la cola.
 dequeue :: Queue a -> Queue a --Dada una cola la devuelve sin su primer elemento.
 
+--INV.REP: No posee.
+
 -- Costo: O(1)
 emptyQ = Q []
 

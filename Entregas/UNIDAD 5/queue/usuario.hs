@@ -2,7 +2,7 @@
 
 --import Queue1
 --import Queue2
-import QueueConDosListas
+import QueueDosListas
 
 
 lengthQ :: Queue a -> Int --Cuenta la cantidad de elementos de la cola.
