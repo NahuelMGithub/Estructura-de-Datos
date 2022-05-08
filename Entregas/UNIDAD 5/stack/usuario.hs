@@ -15,14 +15,16 @@ desapilar :: Stack a -> [a] --Dada una pila devuelve una lista sin alterar el or
 insertarEnPos :: Int -> a -> Stack a -> Stack a --Dada una posicion válida en la stack y un elemento, ubica dicho elemento en dicha
 --posición (se desapilan elementos hasta dicha posición y se inserta en ese lugar).
 
+
+-- Costo: O(n) donde n es la longitud de la lista
 apilar []     = emptyS
 apilar (x:xs) = push x (apilar xs)
 
-
+-- Costo: O(n) donde n es la longitud de la lista
 desapilar stack = if (isEmptyS stack)
                     then []
                     else top stack : desapilar (pop stack)
 
-
+-- Costo: O(n) donde n es el número
 insertarEnPos 0 x s = push x s
 insertarEnPos n x s = push (top s)   (insertarEnPos (n-1) x (pop s)  )

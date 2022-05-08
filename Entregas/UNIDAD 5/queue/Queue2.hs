@@ -17,30 +17,22 @@ dequeue :: Queue a -> Queue a --Dada una cola la devuelve sin su primer elemento
 --2. Implemente ahora la versión que agrega por delante y quita por el final de la lista. Compare
 -- la eficiencia entre ambas implementaciones
 
+-- Costo: O(1)
 emptyQ = Q []
 
-isEmptyQ (Q xs) = esVacio xs
+-- Costo: O(1)
+isEmptyQ (Q xs) = null xs
 
-esVacio :: [a] -> Bool
-esVacio []     = True
-esVacio (x:xs) = False
-
-
+-- Costo: O(n) siendo n, la longitud de xs
 queue x (Q xs) = Q (xs ++ [x])
 
-firstQ (Q xs) = last xs 
+-- Costo: O(1)
+firstQ (Q xs) = head xs 
 
-dequeue (Q xs) = Q (tail xs )
+-- Costo: O(1) 
+dequeue (Q xs) = Q (tail xs)
 
 
 
--- ES MAS ECONÓMICO DE ESTA FORMA, ya que:
+-- ES MAS ECONÓMICO en esta forma quitar elementos, pero es mas costos agregarlos. Inverso a Queue1
 
-{-
-dequeue 2  
-        dequeue (Q xs) = Q (tail xs )
-        Es constante
-dequeue 1
-        Es constante, pero depende de una subtarea sinElUltimo, la cual es LINEAL
-
--}

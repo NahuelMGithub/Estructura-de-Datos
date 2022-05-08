@@ -14,22 +14,23 @@ queue :: a -> Queue a -> Queue a --Dados un elemento y una cola, agrega ese elem
 firstQ :: Queue a -> a --Dada una cola devuelve el primer elemento de la cola.
 dequeue :: Queue a -> Queue a --Dada una cola la devuelve sin su primer elemento.
 
-
+-- Costo: O(1)
 emptyQ = Q []
 
-isEmptyQ (Q xs) = esVacio xs
+-- Costo: O(1)
+isEmptyQ (Q xs) = null xs
 
-esVacio :: [a] -> Bool
-esVacio []     = True
-esVacio (x:xs) = False
+-- Costo: O(1)
+queue x (Q xs) = Q (x:xs)
 
-
-queue x (Q xs) = Q (xs ++ [x])
-
+-- Costo: O(1)
 firstQ (Q xs) = last xs 
 
-dequeue (Q xs) = Q (sinPrimerElemento xs)
+-- Costo: O(n) donde n es la longitud de la cola
+dequeue (Q xs) = Q (sinPrimerElementoDeLaCola xs)
 
-sinPrimerElemento :: [a] -> [a] -- PC: La lista NO puede ser null
-sinPrimerElemento (x:[])   = []
-sinPrimerElemento (x:xs) = sinPrimerElemento xs ++ [x] 
+-- Costo: O(n) donde n es la longitud de la cola
+sinPrimerElementoDeLaCola :: [a] -> [a] -- PC: La lista NO puede ser null
+sinPrimerElementoDeLaCola (x:[])   = []
+sinPrimerElementoDeLaCola (x:xs) = x : sinPrimerElementoDeLaCola xs 
+

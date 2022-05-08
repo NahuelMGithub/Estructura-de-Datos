@@ -91,3 +91,5 @@ orderar xs =
 -- //////////////////////////////// 2. Set (conjunto) \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 
+-- costos en usuarios y implementacion
+-- Inv. Rep: en Implementación!

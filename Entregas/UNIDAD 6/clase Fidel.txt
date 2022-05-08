@@ -1,0 +1,76 @@
+doble PM
+casos innecesarios  
+rec sobre est NO rec
+
+repo dejarlo asi 
+
+
+TEORÍA DE CLASE
+
+1) TODA LAS FN LLEVAN SU COSTO (si posee mas imple, explicar
+cuales son sus costos en caca caso)
+2) JUSTIFICAR COSTOS 
+3) TODAS LAS IMPL. DE TADAS DEBEN TENER INV. REP. (aunque tenga que decir NO TIENE)
+4) un inv de rep es una RESTRICCIÓN sobre el tipo de REPRESENTACIÓN
+No es explicacion, no habla del tad ni del usuario. Pista siempre dar ejemplos y contraejemplos. 
+Si no tengo contraejemplos no es válido. 
+
+5)
+No se puede hacer PM si no es con Constructores de Estructuras Algebraicas
+
+ej: lenQ emptyQ = 0 Esta mal!
+
+lenQ q = if isEmptyQ q  
+            then 0
+            else 1 + lenQ( dequeueQ q) 
+
+
+6)  ej:
+agregar :: [a] -> [a] -> [a] 
+agregar [] ys = ys
+agregar (x:xs) ys = x : agregar xs ys
+
+agregar de orden n
+
+-- O (n) siendo n la longitud de la primer lista
+
+
+7)-- O (M x T) siendo M la longitud de la lista de territorios y T la longitud de la segunda
+
+agregarTerritoios :: [Territorios] -> Nombre -> [(Territorios, [Nombre])]
+agregarTerritoios []     n tns = tns
+agregarTerritoios (t:ts) n tns = agregaT t n (agregarTerritoios ts n tns)
+
+cost: O(T, siendo T la cantidad de elementos de la lista de pares)
+
+agregaT t n []            = (t, [n])
+agregaT t n ((t´,ns):tns) = if esMismoTerritorio t t´
+                            then (t´, n:ns) : tns
+                            else (t´, ns) : agregaT t n tns
+
+en los PARES se puede usar DOBLE PM
+
+!!!!!!!!quejarme de que en la de lobos por territorio dice que es cara
+
+
+dada Set a = S [a]
+
+add x (S xs) = S (x:xs)
+
+--O(M) siendo M la cantidad de veces que se agregaron elementos al Set
+belongS x (Sx) = pertenece x xs
+
+
+pero si lo hago asi.... 
+
+
+dada Set a = S [a] Int
+
+Inv.Rep: el número es la cantidad de elementos distintos de xs
+
+add x (S xs) = S (x:xs)
+
+--O(M) siendo M la cantidad de veces que se agregaron elementos al Set
+belongS x (Sx) = pertenece x xs
+
+leengS (S xs n) = n

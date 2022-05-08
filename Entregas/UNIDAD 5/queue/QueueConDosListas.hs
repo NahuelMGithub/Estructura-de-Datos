@@ -24,26 +24,28 @@ queue :: a -> Queue a -> Queue a --Dados un elemento y una cola, agrega ese elem
 firstQ :: Queue a -> a --Dada una cola devuelve el primer elemento de la cola.
 dequeue :: Queue a -> Queue a --Dada una cola la devuelve sin su primer elemento.
 
+-- Costo: O(1)
+emptyQ = Q [] [] 
 
-emptyQ = Q [] []
 
-isEmptyQ (Q xs _) = esVacio xs  --- Si fs es null es suficiente para garantizar que la cola está vacía
+-- Costo: O(1)
+isEmptyQ (Q xs _) = null xs  --- Si fs es null es suficiente para garantizar que la cola está vacía
 
-esVacio :: [a] -> Bool
-esVacio []     = True
-esVacio (x:xs) = False
 
-queue x q = if isEmptyQ q 
-             then agregarEnFs x q
-             else agregarEnBs x q
+-- Costo: O(1)
+queue x (Q [] [] ) =  Q [x] [] 
+queue x (Q xs ys ) =  Q xs (x:ys)       
 
+{-
 agregarEnFs :: a -> Queue a -> Queue a 
 agregarEnFs x (Q [] []) = Q [x] []
 
 agregarEnBs :: a -> Queue a -> Queue a  
 agregarEnBs x (Q xs ys) = Q xs (x:ys)
 
-firstQ (Q fs bs) = if esVacio bs 
+-}
+
+firstQ (Q fs bs) = if null bs 
              then last fs
              else last bs
 
