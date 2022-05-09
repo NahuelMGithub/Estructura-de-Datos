@@ -29,7 +29,7 @@ push x (S xs) = S (x:xs)
 -- Costo: O(1) 
 top (S xs) = head xs
 
--- Costo: O(n) donde n es la longitud de la lista
+-- Costo: O(1) 
 pop (S xs) = S (tail xs)
 
 -- Costo: O(n) donde n es la longitud de la lista
