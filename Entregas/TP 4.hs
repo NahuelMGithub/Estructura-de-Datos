@@ -126,15 +126,18 @@ esIzquierda _   = False
 
 
 
-{- caminoAlTesoro MAL
+{-
 caminoAlTesoro :: Mapa -> [Dir] -- Indica el camino al tesoro. Precondición: existe un tesoro y es único.
 caminoAlTesoro (Fin c)               = []
 caminoAlTesoro (Bifurcacion c m1 m2) = if hayTesoroEnCofre c 
                                         then []
                                         else if  hayTesoro m1
                                             then Izq : caminoAlTesoro m1
-                                            else Der : caminoAlTesoro m2
+                                             else Der : caminoAlTesoro m2
+ 
+
 -}
+
 
 --caminoAlTesoro :: Mapa -> [Dir] 
 --caminoAlTesoro (Fin c)   = []
